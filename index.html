@@ -719,65 +719,18 @@ textarea { resize: vertical; min-height: 64px; }
   border-color: rgba(226, 232, 240, 0.9);
 }
 
-.premium-qty-selector {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin: 24px 0 16px;
+.qty-modal-display {
+  font-size: 52px; font-weight: 800; text-align: center; margin: 16px 0;
+  letter-spacing: -1.5px; color: var(--accent);
 }
-.qty-btn-minus, .qty-btn-plus {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border-md);
-  background: var(--surface);
-  color: var(--text);
-  font-size: 20px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s ease-in-out;
+.qty-manual-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.qty-manual-row input { text-align: center; font-size: 20px; font-weight: 700; padding: 10px; }
+.qty-step-btn {
+  width: 46px; height: 46px; flex-shrink: 0; border-radius: var(--radius-sm);
+  border: 1px solid var(--border-md); background: var(--bg); font-size: 20px; font-weight: 600;
+  cursor: pointer; color: var(--text-2); transition: all 0.12s;
 }
-.qty-btn-minus:hover, .qty-btn-plus:hover {
-  border-color: var(--accent);
-  background: var(--surface-2);
-  color: var(--accent);
-}
-.qty-num-input {
-  width: 100px;
-  text-align: center;
-  font-size: 36px;
-  font-weight: 800;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  outline: none;
-  -moz-appearance: textfield;
-}
-.qty-num-input::-webkit-outer-spin-button,
-.qty-num-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.qty-pack-helper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--surface-2);
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  margin-bottom: 20px;
-}
-.qty-pack-status {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-2);
-}
+.qty-step-btn:hover { background: var(--border-md); }
 .qty-chip-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
 .qty-chip {
   padding: 12px 0; border-radius: var(--radius-sm); border: 1px solid var(--border-md);
@@ -2063,7 +2016,13 @@ input:focus, select:focus, textarea:focus {
     <div class="auth-form-panel">
       <div class="auth-box">
 
-    <div class="role-selector" id="role-selector">
+        <!-- Error alert banner -->
+        <div id="auth-error-banner" class="hidden" style="background: var(--red-bg); color: var(--red); border: 1.5px solid var(--red); padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13.5px; font-weight: 600; margin-bottom: 20px; line-height: 1.5; display: flex; align-items: center; gap: 8px;">
+          <span style="font-size:16px;">⚠️</span>
+          <span id="auth-error-text">Invalid email or password</span>
+        </div>
+
+        <div class="role-selector" id="role-selector">
       <button class="role-btn active" onclick="setRole('user')">Passenger / Pantry</button>
       <button class="role-btn" onclick="setRole('crew')">Crew</button>
       <button class="role-btn" onclick="setRole('admin')">Admin</button>
@@ -2245,7 +2204,7 @@ input:focus, select:focus, textarea:focus {
 ════════════════════════════════════════════════════════ */
 
 // Production backend API URL
-const BACKEND_API_URL = 'https://final-backend-n2vj.onrender.com/api';
+const BACKEND_API_URL = 'https://backend-wmhu.onrender.com/api';
 
 function lsGet(key) {
   return localStorage.getItem('kb_' + key) || localStorage.getItem('trainserve_' + key);
@@ -2625,6 +2584,9 @@ function setRole(role) {
   document.getElementById('auth-user').classList.toggle('hidden',  role !== 'user');
   document.getElementById('auth-crew').classList.toggle('hidden',  role !== 'crew');
   document.getElementById('auth-admin').classList.toggle('hidden', role !== 'admin');
+  
+  const banner = document.getElementById('auth-error-banner');
+  if (banner) banner.classList.add('hidden');
 }
 
 function setAuthMode(mode) {
@@ -2632,6 +2594,9 @@ function setAuthMode(mode) {
   document.querySelectorAll('.auth-tab').forEach((t, i) => t.classList.toggle('active', ['signin','signup'][i] === mode));
   document.getElementById('pane-signin').classList.toggle('active', mode === 'signin');
   document.getElementById('pane-signup').classList.toggle('active', mode === 'signup');
+  
+  const banner = document.getElementById('auth-error-banner');
+  if (banner) banner.classList.add('hidden');
 }
 
 function togglePasswordVisibility(inputId, button) {
@@ -2660,6 +2625,10 @@ async function signupAs() {
   if (!/^[6-9]\d{9}$/.test(phone)) { toast('Enter a valid 10-digit mobile number', 'err'); return; }
   if (pass.length < 8) { toast('Password must be at least 8 characters', 'err'); return; }
   if (!/[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pass)) { toast('Password must include at least one number or special character', 'err'); return; }
+  
+  const banner = document.getElementById('auth-error-banner');
+  if (banner) banner.classList.add('hidden');
+  
   try {
     const data = await apiFetch('/auth/register', {
       method: 'POST',
@@ -2671,13 +2640,23 @@ async function signupAs() {
     launchApp();
     resumeGuestIntent();
     toast('Account created successfully!', 'ok');
-  } catch (e) { toast(e.message, 'err'); }
+  } catch (e) {
+    if (banner) {
+      document.getElementById('auth-error-text').textContent = e.message || 'Registration failed';
+      banner.classList.remove('hidden');
+      banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    toast(e.message || 'Registration failed', 'err');
+  }
 }
 
 /* ════════════════════════════════════════════════════════
    LOGIN
 ════════════════════════════════════════════════════════ */
 async function loginAs(role) {
+  const banner = document.getElementById('auth-error-banner');
+  if (banner) banner.classList.add('hidden');
+
   try {
     if (role === 'user' || role === 'admin') {
       const emailId = role === 'user' ? 'u-email' : 'a-email';
@@ -2690,12 +2669,10 @@ async function loginAs(role) {
         body: JSON.stringify({ email, password: pass })
       });
       if (role === 'user' && data.role === 'ADMIN') {
-        toast('Please use the Admin tab to sign in as admin.', 'err');
-        return;
+        throw new Error('Please use the Admin tab to sign in as admin.');
       }
       if (role === 'admin' && data.role !== 'ADMIN') {
-        toast('Access denied. This login is for administrators only.', 'err');
-        return;
+        throw new Error('Access denied. This login is for administrators only.');
       }
       currentUser = { ...data, email: data.email || email };
       sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -2713,7 +2690,14 @@ async function loginAs(role) {
     await loadCrew();
     launchApp();
     resumeGuestIntent();
-  } catch (e) { toast(e.message || 'Login failed', 'err'); }
+  } catch (e) {
+    if (banner) {
+      document.getElementById('auth-error-text').textContent = e.message || 'Login failed';
+      banner.classList.remove('hidden');
+      banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    toast(e.message || 'Login failed', 'err');
+  }
 }
 
 // If the guest had items in their cart or wanted a specific page, restore it after login.
@@ -4945,74 +4929,55 @@ function openQtyModal(pid) {
   openModal(`
     <div class="modal-title">${escapeHtml(p.name)}</div>
     ${priceInfo}
-    
-    <div class="premium-qty-selector">
-      <button class="qty-btn-minus" onclick="adjustQty(-1)">−</button>
-      <input type="number" id="qty-modal-input" class="qty-num-input" value="${current}" min="0" oninput="updateQtyInfo()">
-      <button class="qty-btn-plus" onclick="adjustQty(1)">+</button>
-    </div>
-
-    ${hasCase ? `
-    <div class="qty-pack-helper">
-      <button class="btn btn-outline btn-xs" style="padding: 6px 12px; font-weight:600;" onclick="adjustQty(-${p.piecesPerCase})">−1 Pack</button>
-      <span class="qty-pack-status" id="qty-pack-status">0 Packs</span>
-      <button class="btn btn-outline btn-xs" style="padding: 6px 12px; font-weight:600;" onclick="adjustQty(${p.piecesPerCase})">+1 Pack</button>
-    </div>
-    ` : ''}
-
+    <div class="qty-modal-display" id="qty-modal-num">${current}</div>
     <div class="qty-chip-grid">
-      ${presets.map(n => `<div class="qty-chip" id="qty-chip-${n}" onclick="setQtyVal(${n})">${n}</div>`).join('')}
+      ${presets.map(n => `<div class="qty-chip" id="qty-chip-${n}" onclick="setQtyModal(${n})">${n}</div>`).join('')}
     </div>
-
-    <button class="btn btn-primary btn-full mt-16" onclick="confirmQtyModal()">
+    <div class="qty-manual-row">
+      <button class="qty-step-btn" onclick="bumpQtyModal(-10)">−10</button>
+      <input type="number" id="qty-modal-input" placeholder="Type Here" inputmode="numeric" pattern="[0-9]*" value="${current || ''}" min="0"
+        oninput="syncQtyModal(this.value)">
+      <button class="qty-step-btn" onclick="bumpQtyModal(10)">+10</button>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="confirmQtyModal()">
       ${current ? 'Update Order' : 'Add to Order'}
     </button>
-    ${current ? `<button class="btn btn-outline btn-full mt-8" onclick="setQtyVal(0); confirmQtyModal()">Remove from Order</button>` : ''}
+    ${current ? `<button class="btn btn-outline btn-full mt-8" onclick="setQtyModal(0); confirmQtyModal()">Remove from Order</button>` : ''}
   `);
 
-  updateQtyInfo();
-}
-
-function setQtyVal(n) {
+  // Auto-focus input immediately to trigger mobile numeric keyboard
   const inp = document.getElementById('qty-modal-input');
   if (inp) {
-    inp.value = n;
-    updateQtyInfo();
-  }
-}
-
-function adjustQty(delta) {
-  const inp = document.getElementById('qty-modal-input');
-  if (inp) {
-    const val = Math.max(0, (parseInt(inp.value) || 0) + delta);
+    inp.focus();
+    const val = inp.value;
+    inp.value = '';
     inp.value = val;
-    updateQtyInfo();
   }
+
+  updateActiveChips(current);
 }
 
-function updateQtyInfo() {
-  const inp = document.getElementById('qty-modal-input');
-  if (!inp) return;
-  const val = Math.max(0, parseInt(inp.value) || 0);
-  
-  // Update pack status if product has case config
-  const p = PRODUCTS.find(x => x.id === _qtyModalPid);
-  if (p && p.piecesPerCase && p.casePrice) {
-    const packs = Math.floor(val / p.piecesPerCase);
-    const pieces = val % p.piecesPerCase;
-    const statusEl = document.getElementById('qty-pack-status');
-    if (statusEl) {
-      if (packs > 0 && pieces > 0) {
-        statusEl.textContent = `${packs} Pack${packs > 1 ? 's' : ''} + ${pieces} Piece${pieces > 1 ? 's' : ''}`;
-      } else if (packs > 0) {
-        statusEl.textContent = `${packs} Pack${packs > 1 ? 's' : ''}`;
-      } else {
-        statusEl.textContent = `${pieces} Piece${pieces !== 1 ? 's' : ''}`;
-      }
-    }
-  }
+function setQtyModal(n) {
+  document.getElementById('qty-modal-num').textContent = n;
+  document.getElementById('qty-modal-input').value = n || '';
+  updateActiveChips(n);
+}
 
-  // Update active chips styling
+function syncQtyModal(val) {
+  const n = Math.max(0, parseInt(val) || 0);
+  document.getElementById('qty-modal-num').textContent = n;
+  updateActiveChips(n);
+}
+
+function bumpQtyModal(delta) {
+  const inp = document.getElementById('qty-modal-input');
+  const n = Math.max(0, (parseInt(inp.value) || 0) + delta);
+  inp.value = n || '';
+  document.getElementById('qty-modal-num').textContent = n;
+  updateActiveChips(n);
+}
+
+function updateActiveChips(val) {
   const presets = [10, 25, 50, 100, 250, 500];
   presets.forEach(n => {
     const chip = document.getElementById('qty-chip-' + n);
