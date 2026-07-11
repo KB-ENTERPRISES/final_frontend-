@@ -185,6 +185,7 @@ html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
   --accent:      #ff385c; /* Rausch (Airbnb) */
   --accent-fg:   #ffffff;
   --accent-h:    #e00b41; /* Rausch active */
+  --input-focus-bg: #FAFCFF;
 
   /* Status Color Palettes */
   --gold:        #D97706; /* Amber-600 */
@@ -226,6 +227,7 @@ body.dark-theme {
   --text:        #f3f4f6; /* White/Light gray ink */
   --text-2:      #e5e7eb; /* Light gray body */
   --text-muted:  #9ca3af; /* Light/Muted gray */
+  --input-focus-bg: #2a2a2a;
 
   /* Status overrides for dark mode to prevent black/dark text on dark background */
   --gold-bg:     #452a05;
@@ -1774,7 +1776,7 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(255, 56, 92, 0.12);
-  background: #FAFCFF;
+  background: var(--input-focus-bg);
 }
 
 /* ─── Modal: Scale Animation ─── */
@@ -2196,7 +2198,7 @@ input:focus, select:focus, textarea:focus {
 ════════════════════════════════════════════════════════ */
 
 // Production backend API URL
-const BACKEND_API_URL = 'https://final-backend-n2vj.onrender.com/api';
+const BACKEND_API_URL = 'https://backend-wmhu.onrender.com/api';
 
 function lsGet(key) {
   return localStorage.getItem('kb_' + key) || localStorage.getItem('trainserve_' + key);
@@ -2870,7 +2872,8 @@ function launchApp() {
   document.getElementById('main-content').style.paddingBottom = '';
   const defaultPage = NAV[currentUser.role.toLowerCase()]?.[0]?.id || 'place-order';
   const urlPage = window.location.pathname.replace(BASE_PATH, '').replace(/^\//, '');
-  const targetPage = urlPage && urlPage !== '' ? urlPage : defaultPage;
+  const invalidPages = ['auth', 'admin'];
+  const targetPage = urlPage && urlPage !== '' && !invalidPages.includes(urlPage) ? urlPage : defaultPage;
   history.replaceState({ page: targetPage, app: true }, '', BASE_PATH + targetPage);
   navigateTo(targetPage, { skipHistory: true });
 }
