@@ -719,9 +719,64 @@ textarea { resize: vertical; min-height: 64px; }
   border-color: rgba(226, 232, 240, 0.9);
 }
 
-.qty-modal-display {
-  font-size: 52px; font-weight: 800; text-align: center; margin: 16px 0;
-  letter-spacing: -1.5px; color: var(--accent);
+.premium-qty-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin: 24px 0 16px;
+}
+.qty-btn-minus, .qty-btn-plus {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-md);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+.qty-btn-minus:hover, .qty-btn-plus:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  color: var(--accent);
+}
+.qty-num-input {
+  width: 100px;
+  text-align: center;
+  font-size: 36px;
+  font-weight: 800;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  outline: none;
+  -moz-appearance: textfield;
+}
+.qty-num-input::-webkit-outer-spin-button,
+.qty-num-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.qty-pack-helper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-2);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.qty-pack-status {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
 }
 .qty-chip-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
 .qty-chip {
@@ -731,14 +786,6 @@ textarea { resize: vertical; min-height: 64px; }
 }
 .qty-chip:hover { border-color: var(--accent); background: var(--bg); }
 .qty-chip.active { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
-.qty-manual-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-.qty-manual-row input { text-align: center; font-size: 20px; font-weight: 700; padding: 10px; }
-.qty-step-btn {
-  width: 46px; height: 46px; flex-shrink: 0; border-radius: var(--radius-sm);
-  border: 1px solid var(--border-md); background: var(--bg); font-size: 20px; font-weight: 600;
-  cursor: pointer; color: var(--text-2); transition: all 0.12s;
-}
-.qty-step-btn:hover { background: var(--border-md); }
 
 /* ─── Hamburger menu (mobile) ─── */
 .hamburger-btn {
@@ -2198,7 +2245,7 @@ input:focus, select:focus, textarea:focus {
 ════════════════════════════════════════════════════════ */
 
 // Production backend API URL
-const BACKEND_API_URL = 'https://final-backend-n2vj.onrender.com/api';
+const BACKEND_API_URL = 'https://backend-wmhu.onrender.com/api';
 
 function lsGet(key) {
   return localStorage.getItem('kb_' + key) || localStorage.getItem('trainserve_' + key);
@@ -2517,7 +2564,10 @@ async function apiFetch(path, options = {}) {
   const text = await res.text();
   let data;
   try { data = JSON.parse(text); } catch { throw new Error(`HTTP ${res.status} – Server returned a non-JSON response.`); }
-  if (!res.ok) throw new Error(data.message || data.error || `HTTP ${res.status} – Request failed`);
+  if (!res.ok) {
+    const errorMsg = data.error || data.message || `HTTP ${res.status} – Request failed`;
+    throw new Error(errorMsg);
+  }
   return data;
 }
 
@@ -4410,10 +4460,24 @@ async function acceptOrder(oid, btn) {
   } catch (e) { if (btn) btn.disabled = false; toast(e.message, 'err'); }
 }
 
-async function deleteOrder(oid) {
-  if (!confirm("Are you sure you want to delete this order? This will permanently remove the order and notify the customer and crew.")) return;
+function deleteOrder(oid) {
+  openModal(`
+    <div class="modal-title" style="color: var(--red);">Delete Order</div>
+    <p style="margin-bottom: 20px; font-size: 14px; line-height: 1.6; color: var(--text-2);">
+      Are you sure you want to permanently delete order <strong>${escapeHtml(oid)}</strong>?<br>
+      This will notify the customer and assigned crew member, and cannot be undone.
+    </p>
+    <div class="flex gap-8" style="justify-content: flex-end; margin-top: 16px;">
+      <button class="btn btn-outline" style="flex:1" onclick="closeModal(); ${currentPage === 'all-orders' || currentPage === 'dashboard' ? `openDetail('${escapeHtml(oid)}')` : ''}">Cancel</button>
+      <button class="btn btn-primary" style="flex:1; background: var(--red); border-color: var(--red);" onclick="executeDeleteOrder('${escapeHtml(oid)}')">Delete Order</button>
+    </div>
+  `);
+}
+
+async function executeDeleteOrder(oid) {
   try {
     await apiFetch('/orders/' + oid, { method: 'DELETE' });
+    closeModal();
     toast('Order deleted successfully.', 'ok');
     if (currentPage === 'all-orders') {
       navigateTo('all-orders');
@@ -4881,42 +4945,86 @@ function openQtyModal(pid) {
   openModal(`
     <div class="modal-title">${escapeHtml(p.name)}</div>
     ${priceInfo}
-    <div class="qty-modal-display" id="qty-modal-num">${current}</div>
+    
+    <div class="premium-qty-selector">
+      <button class="qty-btn-minus" onclick="adjustQty(-1)">−</button>
+      <input type="number" id="qty-modal-input" class="qty-num-input" value="${current}" min="0" oninput="updateQtyInfo()">
+      <button class="qty-btn-plus" onclick="adjustQty(1)">+</button>
+    </div>
+
+    ${hasCase ? `
+    <div class="qty-pack-helper">
+      <button class="btn btn-outline btn-xs" style="padding: 6px 12px; font-weight:600;" onclick="adjustQty(-${p.piecesPerCase})">−1 Pack</button>
+      <span class="qty-pack-status" id="qty-pack-status">0 Packs</span>
+      <button class="btn btn-outline btn-xs" style="padding: 6px 12px; font-weight:600;" onclick="adjustQty(${p.piecesPerCase})">+1 Pack</button>
+    </div>
+    ` : ''}
+
     <div class="qty-chip-grid">
-      ${presets.map(n => `<div class="qty-chip" onclick="setQtyModal(${n})">${n}</div>`).join('')}
+      ${presets.map(n => `<div class="qty-chip" id="qty-chip-${n}" onclick="setQtyVal(${n})">${n}</div>`).join('')}
     </div>
-    <div class="qty-manual-row">
-      <button class="qty-step-btn" onclick="bumpQtyModal(-10)">−10</button>
-      <input type="number" id="qty-modal-input" value="${current}" min="0"
-        oninput="syncQtyModal(this.value)">
-      <button class="qty-step-btn" onclick="bumpQtyModal(10)">+10</button>
-    </div>
-    <button class="btn btn-primary btn-full" onclick="confirmQtyModal()">
+
+    <button class="btn btn-primary btn-full mt-16" onclick="confirmQtyModal()">
       ${current ? 'Update Order' : 'Add to Order'}
     </button>
-    ${current ? `<button class="btn btn-outline btn-full mt-8" onclick="setQtyModal(0); confirmQtyModal()">Remove from Order</button>` : ''}
+    ${current ? `<button class="btn btn-outline btn-full mt-8" onclick="setQtyVal(0); confirmQtyModal()">Remove from Order</button>` : ''}
   `);
+
+  updateQtyInfo();
 }
 
-function setQtyModal(n) {
-  document.getElementById('qty-modal-num').textContent = n;
-  document.getElementById('qty-modal-input').value = n;
-}
-
-function syncQtyModal(val) {
-  const n = Math.max(0, parseInt(val) || 0);
-  document.getElementById('qty-modal-num').textContent = n;
-}
-
-function bumpQtyModal(delta) {
+function setQtyVal(n) {
   const inp = document.getElementById('qty-modal-input');
-  const n = Math.max(0, (parseInt(inp.value) || 0) + delta);
-  inp.value = n;
-  document.getElementById('qty-modal-num').textContent = n;
+  if (inp) {
+    inp.value = n;
+    updateQtyInfo();
+  }
+}
+
+function adjustQty(delta) {
+  const inp = document.getElementById('qty-modal-input');
+  if (inp) {
+    const val = Math.max(0, (parseInt(inp.value) || 0) + delta);
+    inp.value = val;
+    updateQtyInfo();
+  }
+}
+
+function updateQtyInfo() {
+  const inp = document.getElementById('qty-modal-input');
+  if (!inp) return;
+  const val = Math.max(0, parseInt(inp.value) || 0);
+  
+  // Update pack status if product has case config
+  const p = PRODUCTS.find(x => x.id === _qtyModalPid);
+  if (p && p.piecesPerCase && p.casePrice) {
+    const packs = Math.floor(val / p.piecesPerCase);
+    const pieces = val % p.piecesPerCase;
+    const statusEl = document.getElementById('qty-pack-status');
+    if (statusEl) {
+      if (packs > 0 && pieces > 0) {
+        statusEl.textContent = `${packs} Pack${packs > 1 ? 's' : ''} + ${pieces} Piece${pieces > 1 ? 's' : ''}`;
+      } else if (packs > 0) {
+        statusEl.textContent = `${packs} Pack${packs > 1 ? 's' : ''}`;
+      } else {
+        statusEl.textContent = `${pieces} Piece${pieces !== 1 ? 's' : ''}`;
+      }
+    }
+  }
+
+  // Update active chips styling
+  const presets = [10, 25, 50, 100, 250, 500];
+  presets.forEach(n => {
+    const chip = document.getElementById('qty-chip-' + n);
+    if (chip) {
+      chip.classList.toggle('active', val === n);
+    }
+  });
 }
 
 function confirmQtyModal() {
-  const n = Math.max(0, parseInt(document.getElementById('qty-modal-input').value) || 0);
+  const inp = document.getElementById('qty-modal-input');
+  const n = Math.max(0, parseInt(inp ? inp.value : 0) || 0);
   if (n === 0) delete orderCart[_qtyModalPid]; else orderCart[_qtyModalPid] = n;
   closeModal();
   buildProductGrid(document.getElementById('product-search')?.value || '');
