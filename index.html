@@ -2009,7 +2009,7 @@ input:focus, select:focus, textarea:focus {
     <div class="auth-brand-panel">
       <div class="auth-brand-kb">KB</div>
       <div class="auth-brand-full">ENTERPRISES</div>
-      <p class="auth-brand-desc">Railway pantry &amp; stall order management — serving passengers, crew, and pantry coordinators across the network.</p>
+      <p class="auth-brand-desc">Railway pantry &amp; stall order management — serving stall owners, crew, and pantry coordinators across the network.</p>
       <p class="auth-brand-desc" style="margin-top:14px;">Need help? <a href="mailto:enterpriseskb01@gmail.com" style="color:#fff;text-decoration:underline;">enterpriseskb01@gmail.com</a></p>
     </div>
     <div class="auth-form-panel">
@@ -2022,7 +2022,7 @@ input:focus, select:focus, textarea:focus {
         </div>
 
         <div class="role-selector" id="role-selector">
-      <button class="role-btn active" onclick="setRole('user')">Passenger / Pantry</button>
+      <button class="role-btn active" onclick="setRole('user')">Stall Owner / Pantry</button>
       <button class="role-btn" onclick="setRole('crew')">Crew</button>
       <button class="role-btn" onclick="setRole('admin')">Admin</button>
     </div>
@@ -2069,8 +2069,8 @@ input:focus, select:focus, textarea:focus {
         <div class="form-group">
           <label>Role</label>
           <select id="u-srole">
-            <option value="user">Passenger</option>
-            <option value="pantry">Pantry Coordinator</option>
+            <option value="pantry" selected>Pantry Coordinator</option>
+            <option value="user">Stall Owner</option>
           </select>
         </div>
         <button type="submit" class="btn btn-primary btn-full">Create Account</button>
@@ -3379,7 +3379,7 @@ function renderPlaceOrder(el) {
             <div class="card-title">Delivery Option</div>
           </div>
           <div class="role-selector" style="margin-bottom: 0;">
-            <button class="role-btn active" id="ot-train" onclick="setOrderType('train')">Train Passenger</button>
+            <button class="role-btn active" id="ot-train" onclick="setOrderType('train')">Train / Pantry</button>
             <button class="role-btn" id="ot-stall" onclick="setOrderType('stall')">Stall Owner</button>
           </div>
         </div>
@@ -3387,10 +3387,10 @@ function renderPlaceOrder(el) {
         <!-- Passenger Details Form -->
         <div class="card mb-16" id="train-details-card" style="padding: 24px;">
           <div class="card-header" style="margin-bottom: 12px;">
-            <div class="card-title">Passenger Details</div>
+            <div class="card-title">Pantry Coordinator Details</div>
           </div>
           <div class="form-group">
-            <label>Passenger Name</label>
+            <label>Pantry Coordinator Name</label>
             <input type="text" id="po-name" placeholder="Full name" value="${currentUser?.name || ''}" ${lockedInputAttrs}>
           </div>
           <div class="form-group">
