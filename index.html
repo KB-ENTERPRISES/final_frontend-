@@ -2588,7 +2588,7 @@ async function apiFetch(path, options = {}) {
   if (currentUser?.token) headers['Authorization'] = 'Bearer ' + currentUser.token;
 
   const controller = new AbortController();
-  const timeoutId  = setTimeout(() => controller.abort(), 30000);
+  const timeoutId  = setTimeout(() => controller.abort(), 90000);
 
   let res;
   try {
