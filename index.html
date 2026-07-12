@@ -29,7 +29,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>/* ─── Reset ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; } 
@@ -2204,7 +2203,7 @@ input:focus, select:focus, textarea:focus {
 ════════════════════════════════════════════════════════ */
 
 // Production backend API URL
-const BACKEND_API_URL = 'https://backend-wmhu.onrender.com/api';
+const BACKEND_API_URL = 'https://final-backend-n2vj.onrender.com/api';
 
 function lsGet(key) {
   return localStorage.getItem('kb_' + key) || localStorage.getItem('trainserve_' + key);
@@ -4798,7 +4797,9 @@ function downloadReceipt(source, filename = 'Receipt.pdf') {
           scale: 2,
           useCORS: true,
           logging: false,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          scrollY: 0,
+          scrollX: 0
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       }).from(idoc.body).save().then(() => {
