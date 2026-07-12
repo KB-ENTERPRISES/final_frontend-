@@ -3604,7 +3604,11 @@ function renderHome(el) {
     <div class="card tc" style="padding: 32px 24px; margin-top: 8px;">
       <div class="card-title" style="font-size:18px;margin-bottom:8px;">Need help or have a question?</div>
       <p class="muted" style="margin-bottom: 16px;">Reach out directly and our team will get back to you.</p>
-      <a href="mailto:enterpriseskb01@gmail.com?subject=KB%20Enterprises%20Inquiry" class="btn btn-primary btn-sm">Email Us — enterpriseskb01@gmail.com</a>
+      <div style="display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;">
+  <a href="mailto:enterpriseskb01@gmail.com?subject=KB%20Enterprises%20Inquiry" class="btn btn-primary btn-sm">Email Us — enterpriseskb01@gmail.com</a>
+  <img id="home-qr-thumb" src="assets/qr-code.png" onclick="openQrModal()" title="Tap to view, download or share our QR code"
+       style="cursor:pointer; width:60px; height:60px; border-radius:10px; border:1px solid var(--border); padding:4px; background:#fff; object-fit:contain;">
+</div>
     </div>
   `;
 }
@@ -4971,6 +4975,61 @@ function toast(msg, type='') {
   d.textContent = msg;
   wrap.appendChild(d);
   setTimeout(() => d.remove(), 5000);
+}
+
+const QR_IMAGE_PATH = 'assets/qr-code.png';
+
+function openQrModal() {
+  openModal(`
+    <div class="modal-title">Scan to Connect</div>
+    <div class="tc" style="margin-bottom:20px;">
+      <img src="${QR_IMAGE_PATH}" alt="KB Enterprises QR Code" style="width:220px;height:220px;border-radius:12px;border:1px solid var(--border);padding:8px;background:#fff;">
+    </div>
+    <div class="flex gap-8">
+      <button class="btn btn-outline btn-full" onclick="downloadQrCode()">Download</button>
+      <button class="btn btn-primary btn-full" onclick="shareQrCode()">Share</button>
+    </div>
+  `);
+}
+
+async function getQrBlob() {
+  const res = await fetch(QR_IMAGE_PATH);
+  if (!res.ok) throw new Error('QR image not found');
+  return res.blob();
+}
+
+async function downloadQrCode() {
+  try {
+    const blob = await getQrBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'KB-Enterprises-QR.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast('QR code downloaded', 'ok');
+  } catch (e) {
+    toast('Could not download QR code', 'err');
+  }
+}
+
+async function shareQrCode() {
+  try {
+    const blob = await getQrBlob();
+    const file = new File([blob], 'KB-Enterprises-QR.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'KB Enterprises', text: 'Scan to connect with KB Enterprises' });
+    } else if (navigator.share) {
+      await navigator.share({ title: 'KB Enterprises', text: 'https://kbenterprises.shop', url: 'https://kbenterprises.shop' });
+    } else {
+      toast("Sharing isn't supported on this browser — downloading instead.", 'warn');
+      downloadQrCode();
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') toast('Could not share QR code', 'err');
+  }
 }
 
 
