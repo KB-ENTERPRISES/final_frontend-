@@ -2204,7 +2204,7 @@ input:focus, select:focus, textarea:focus {
 ════════════════════════════════════════════════════════ */
 
 // Production backend API URL
-const BACKEND_API_URL = 'https://final-backend-n2vj.onrender.com/api';
+const BACKEND_API_URL = 'https://backend-wmhu.onrender.com/api';
 
 function lsGet(key) {
   return localStorage.getItem('kb_' + key) || localStorage.getItem('trainserve_' + key);
@@ -4769,8 +4769,9 @@ function downloadReceipt(source, filename = 'Receipt.pdf') {
   idoc.open();
   idoc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><style>
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:Arial,Helvetica,sans-serif;background:#ffffff;padding:16px;}
-    .receipt-card{border:1px solid #eeeeee;border-radius:8px;background:#ffffff;padding:20px;margin-bottom:20px;color:#111111;}
+    html, body{background:#ffffff !important;background-color:#ffffff !important;}
+    body{font-family:Arial,Helvetica,sans-serif;padding:16px;}
+    .receipt-card{border:1px solid #eeeeee;border-radius:8px;background:#ffffff !important;background-color:#ffffff !important;padding:20px;margin-bottom:20px;color:#111111;}
     .receipt-header{text-align:center;margin-bottom:16px;border-bottom:1px dashed #dddddd;padding-bottom:16px;}
     .receipt-title{font-size:16px;font-weight:800;color:#111111;text-transform:uppercase;letter-spacing:1px;}
     .receipt-subtitle{font-size:11px;color:#666666;margin-top:4px;}
@@ -4792,7 +4793,7 @@ function downloadReceipt(source, filename = 'Receipt.pdf') {
       html2pdf().set({
         margin: 10,
         filename: filename,
-        image: { type: 'png' },
+        image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
           useCORS: true,
