@@ -3041,7 +3041,7 @@ function navigateTo(page, options = {}) {
   document.getElementById('mi-'+page)?.classList.add('active');
   const mc = document.getElementById('main-content');
   mc.innerHTML = '<div class="loading-shell"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div>';
-  ({
+  const renderFn = ({
     'home': renderHome,
     'place-order':    renderPlaceOrder,
     'my-orders':      renderMyOrders,
@@ -3057,7 +3057,20 @@ function navigateTo(page, options = {}) {
     'add-product':    renderAddProduct,
     'daily-report': renderDailyReport,
     'settings': renderSettings,
-  })[page]?.(mc);
+  })[page];
+  const renderResult = renderFn?.(mc);
+
+  const attachCompactFooter = () => {
+    if (currentUser?.token && currentUser.role?.toLowerCase() === 'user') {
+      mc.insertAdjacentHTML('beforeend', footerCreditHTML(true));
+    }
+  };
+  if (renderResult && typeof renderResult.then === 'function') {
+    renderResult.then(attachCompactFooter);
+  } else {
+    attachCompactFooter();
+  }
+
   if (page !== 'place-order') {
     document.getElementById('mobile-order-bar')?.classList.remove('show');
     document.body.classList.remove('has-order-bar');
@@ -3610,6 +3623,7 @@ function renderHome(el) {
        style="cursor:pointer; width:60px; height:60px; border-radius:10px; border:1px solid var(--border); padding:4px; background:#fff; object-fit:contain;">
 </div>
     </div>
+    ${footerCreditHTML(false)}
   `;
 }
 
@@ -5032,6 +5046,29 @@ async function shareQrCode() {
   }
 }
 
+
+function footerCreditHTML(compact) {
+  const wrapPad   = compact ? '14px 16px' : '22px 16px';
+  const copySize  = compact ? '10.5px'    : '12px';
+  const quoteSize = compact ? '11.5px'    : '13.5px';
+  const ctaSize   = compact ? '10.5px'    : '12.5px';
+  return `
+    <div class="tc" style="padding:${wrapPad};border-top:1px solid var(--border);">
+      <div class="muted" style="font-size:${copySize};margin-bottom:6px;">© 2026 KB Enterprises. All rights reserved.</div>
+      <div style="font-size:${quoteSize};font-weight:600;margin-bottom:8px;color:var(--text-2);">
+        "Built with passion, brick by brick" –
+        <span style="background:linear-gradient(135deg,var(--accent),var(--accent-h));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:900;font-family:'Outfit','Inter',sans-serif;letter-spacing:0.3px;">AJAI S</span>
+      </div>
+      <div class="muted" style="font-size:${ctaSize};line-height:1.7;max-width:380px;margin:0 auto;">
+        Want a project that works end-to-end?<br>
+        Connect with me on
+        <a href="https://www.linkedin.com/in/ajaisivakumar/" target="_blank" rel="noopener noreferrer" style="color:var(--accent);font-weight:700;text-decoration:underline;">LinkedIn</a>
+        or dial
+        <a href="tel:+918608437930" style="color:var(--gold-dark);font-weight:700;text-decoration:none;">+91 86084 37930</a>.
+      </div>
+    </div>`;
+}
+  
 
 /*   phone number copyting option in the crew page    */
   
