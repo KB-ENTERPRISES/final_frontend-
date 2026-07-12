@@ -2203,7 +2203,7 @@ input:focus, select:focus, textarea:focus {
 ════════════════════════════════════════════════════════ */
 
 // Production backend API URL
-const BACKEND_API_URL = 'https://final-backend-n2vj.onrender.com/api';
+const BACKEND_API_URL = 'https://backend-wmhu.onrender.com/api';
 
 function lsGet(key) {
   return localStorage.getItem('kb_' + key) || localStorage.getItem('trainserve_' + key);
@@ -2367,8 +2367,12 @@ function renderTrainSuggestions(matches) {
   ).join('');
   container.classList.remove('hidden');
   container.querySelectorAll('.autocomplete-item').forEach(item => {
+    let startX = 0;
+    let startY = 0;
+    let moved = false;
+
     const selectThisTrain = (e) => {
-      e.preventDefault();
+      if (e) e.preventDefault();
       const trainNameInput = document.getElementById('po-trainname');
       const trainNoInput = document.getElementById('po-trainno');
       const note = document.getElementById('train-autofill-note');
@@ -2378,8 +2382,35 @@ function renderTrainSuggestions(matches) {
       container.innerHTML = '';
       container.classList.add('hidden');
     };
-    item.onmousedown = selectThisTrain;
-    item.ontouchstart = selectThisTrain;
+
+    item.onmousedown = (e) => {
+      // Ignore if it's a simulated mouse event from a touch device
+      if (e.pointerType === 'touch' || e.sourceCapabilities?.firesTouchEvents) {
+        return;
+      }
+      selectThisTrain(e);
+    };
+
+    item.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      moved = false;
+    }, { passive: true });
+
+    item.addEventListener('touchmove', (e) => {
+      const diffX = Math.abs(e.touches[0].clientX - startX);
+      const diffY = Math.abs(e.touches[0].clientY - startY);
+      if (diffX > 10 || diffY > 10) {
+        moved = true;
+      }
+    }, { passive: true });
+
+    item.addEventListener('touchend', (e) => {
+      if (!moved) {
+        e.preventDefault();
+        selectThisTrain(e);
+      }
+    });
   });
 }
 
@@ -4649,6 +4680,7 @@ ________________________________________________________ */
 
 function orderSlipHTML(o) {
   const isStall = (o.orderType || 'train') === 'stall';
+  const originalTotal = (o.items || []).reduce((sum, i) => sum + (i.price * i.qty), 0);
   const rows = (o.items || []).map(i =>
     `<tr><td>${escapeHtml(i.name)}</td><td style="text-align:center">${i.qty}</td><td style="text-align:right">₹${(i.price * i.qty).toFixed(2)}</td></tr>`
   ).join('');
@@ -4671,7 +4703,7 @@ function orderSlipHTML(o) {
         <thead><tr><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Amount</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
-      <div class="receipt-total-row"><span>Amount to Pay</span><span>₹${o.total}</span></div>
+      <div class="receipt-total-row"><span>Amount to Pay</span><span>₹${originalTotal.toFixed(2)}</span></div>
       <div class="receipt-footer">Please verify all items on delivery.<br>KB ENTERPRISES — Railway Pantry &amp; Stall Services</div>
     </div>`;
 }
