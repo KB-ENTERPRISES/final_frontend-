@@ -3873,7 +3873,7 @@ async function renderNotifications(el) {
                 const parts = n.message.split(':');
                 const oid = parts[1];
                 displayMsg = parts.slice(2).join(':');
-                actionBtn = '<button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="openReceipt(\'' + escapeHtml(oid) + '\')">View &amp; Download Receipt</button>';
+                actionBtn = '<button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="downloadOrderReceiptForUser(\'' + escapeHtml(oid) + '\')">Download Receipt</button>';
               } else if (isSlip) {
                 const parts = n.message.split(':');
                 const oid = parts[1];
@@ -4428,7 +4428,8 @@ function orderCard(o, viewer) {
     actions += ` <button class="btn btn-outline btn-sm" style="border-color: var(--red); color: var(--red);" onclick="deleteOrder('${escapeHtml(o.id)}')">Delete</button>`;
   }
   if (status === 'completed') {
-    actions += `${actions ? ' ' : ''}<button class="btn btn-outline btn-sm" onclick="openReceipt('${escapeHtml(o.id)}')">Receipt</button>`;
+    const orderJson = JSON.stringify(o).replace(/'/g, "&apos;");
+    actions += `${actions ? ' ' : ''}<button class="btn btn-outline btn-sm" onclick='downloadOrderPdf(${orderJson})'>Receipt</button>`;
   }
   const phoneMetaHtml = (viewer !== 'user' && o.userPhone)
     ? `<div class="meta-item">
@@ -4685,12 +4686,21 @@ function downloadOrderSlip(o) {
    DOWNLOAD ORDER SLIP FOR USR
    _____________________________________________________*/
 
-  async function downloadOrderSlipForUser(oid) {
+async function downloadOrderSlipForUser(oid) {
   try {
     const orders = await apiFetch('/orders/my');
     const o = orders.find(x => x.id === oid);
     if (!o) { toast('Order not found', 'err'); return; }
     downloadOrderSlip(o);
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function downloadOrderReceiptForUser(oid) {
+  try {
+    const orders = await apiFetch('/orders/my');
+    const o = orders.find(x => x.id === oid);
+    if (!o) { toast('Order not found', 'err'); return; }
+    downloadOrderPdf(o);
   } catch (e) { toast(e.message, 'err'); }
 }
 
@@ -4828,6 +4838,7 @@ function downloadReceipt(source, filename = 'Receipt.pdf') {
     setTimeout(() => {
       iframe.style.height = (idoc.body.scrollHeight + 20) + 'px';
 
+      const targetElement = idoc.getElementById('print-receipt') || idoc.body;
       html2pdf().set({
         margin: 10,
         filename: filename,
@@ -4841,7 +4852,7 @@ function downloadReceipt(source, filename = 'Receipt.pdf') {
           scrollX: 0
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).from(idoc.body).save().then(() => {
+      }).from(targetElement).save().then(() => {
         toast('Receipt downloaded!', 'ok');
         cleanup();
         resolve();
@@ -5118,7 +5129,7 @@ async function viewDailyReportDetails() {
                     <td><strong>₹${o.total}</strong></td>
                     <td>${escapeHtml(o.crew_name || 'Unassigned')}</td>
                     <td><span class="badge ${statusClass}">${o.status}</span></td>
-                    <td><button class="btn btn-outline" style="padding:4px 10px; font-size:11px; white-space:nowrap;" onclick="openReceipt('${escapeHtml(o.id)}', null, 'native')">📄 Receipt</button></td>
+                    <td><button class="btn btn-outline" style="padding:4px 10px; font-size:11px; white-space:nowrap;" onclick='downloadOrderReceiptFromReport(${JSON.stringify(o).replace(/'/g, "&apos;")})'>📄 Receipt</button></td>
                   </tr>
                 `;
               }).join('')}
