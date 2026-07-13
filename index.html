@@ -5049,28 +5049,28 @@ async function shareQrCode() {
 
 
 function footerCreditHTML(compact) {
-  const padTop    = compact ? '10px' : '16px';
-  const copySize  = compact ? '9px'  : '10.5px';
-  const quoteSize = compact ? '10px' : '11.5px';
-  const ctaSize   = compact ? '9px'  : '10.5px';
+  const padTop    = compact ? '8px'  : '14px';
+  const copySize  = compact ? '8px'  : '10px';
+  const quoteSize = compact ? '8.5px': '11px';
+  const ctaSize   = compact ? '8px'  : '10px';
+  const gap       = compact ? '3px'  : '5px';
   return `
-    <div class="tc" style="padding:${padTop} 14px 10px;border-top:1px solid var(--border);">
-      <div class="muted" style="font-size:${copySize};margin-bottom:4px;">© 2026 KB Enterprises. All rights reserved.</div>
-      <div style="font-size:${quoteSize};font-weight:600;margin-bottom:6px;color:var(--text-2);">
+    <div class="tc" style="padding:${padTop} 12px 8px;border-top:1px solid var(--border);">
+      <div class="muted" style="font-size:${copySize};margin-bottom:${gap};">© 2026 KB Enterprises. All rights reserved.</div>
+      <div style="font-size:${quoteSize};font-weight:600;margin-bottom:${gap};color:var(--text-2);">
         "Built with passion, brick by brick" –
         <a href="https://www.linkedin.com/in/ajaisivakumar/" target="_blank" rel="noopener noreferrer" onclick="return openLinkedIn(event)"
            style="background:linear-gradient(135deg,var(--accent),var(--accent-h));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:900;font-family:'Outfit','Inter',sans-serif;letter-spacing:0.3px;text-decoration:none;">AJAI S</a>
       </div>
-      <div class="muted" style="font-size:${ctaSize};line-height:1.6;max-width:320px;margin:0 auto;">
+      <div class="muted" style="font-size:${ctaSize};line-height:1.5;max-width:300px;margin:0 auto;">
         Want a project that works end-to-end? Connect with me on
         <a href="https://www.linkedin.com/in/ajaisivakumar/" target="_blank" rel="noopener noreferrer" onclick="return openLinkedIn(event)"
            style="color:var(--accent);font-weight:700;text-decoration:underline;">LinkedIn</a>
         or dial
-        <a href="tel:+918608437930" style="color:var(--gold-dark);font-weight:700;text-decoration:none;white-space:nowrap;">+91&nbsp;86084&nbsp;37930</a>.
+        <a href="tel:+918608437930" style="background:linear-gradient(135deg,var(--accent),var(--accent-h));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;text-decoration:none;white-space:nowrap;">+91&nbsp;86084&nbsp;37930</a>.
       </div>
     </div>`;
 }
-
 function openLinkedIn(e) {
   if (e) e.preventDefault();
   window.open('https://www.linkedin.com/in/ajaisivakumar/', '_blank', 'noopener,noreferrer');
