@@ -5083,14 +5083,13 @@ function openLinkedIn(e) {
 }
 
 function pinFooterToBottom(mc, footerHtml) {
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'display:flex;flex-direction:column;min-height:calc(100vh - var(--topbar-h) - 90px);';
-  while (mc.firstChild) wrapper.appendChild(mc.firstChild);
+  mc.style.display = 'flex';
+  mc.style.flexDirection = 'column';
+  mc.style.minHeight = 'calc(100vh - var(--topbar-h))';
   const footerHolder = document.createElement('div');
   footerHolder.style.marginTop = 'auto';
   footerHolder.innerHTML = footerHtml;
-  wrapper.appendChild(footerHolder);
-  mc.appendChild(wrapper);
+  mc.appendChild(footerHolder);
 }
   
 
