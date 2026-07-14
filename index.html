@@ -2088,10 +2088,12 @@ input:focus, select:focus, textarea:focus {
 
 <!-- Crew card -->
     <div id="auth-crew" class="auth-card hidden">
-      <div class="card-header">
+      <div class="card-header" style="flex-direction:column; align-items:flex-start; gap:4px;">
         <div class="card-title">Crew Sign In</div>
         <div class="card-subtitle">Select your profile and enter your PIN</div>
-        <div class="card-subtitle" style="margin-top:4px;">Trouble signing in? <a href="tel:+919600334884" style="color:var(--accent);font-weight:600;text-decoration:none;">Call +91 96003 34884</a></div>
+      </div>
+      <div class="card-subtitle" style="margin-top:-8px; margin-bottom:16px;">
+         Trouble signing in? <a href="tel:+919600334884" style="color:var(--accent);font-weight:600;text-decoration:none;">Call +91 96003 34884</a>
       </div>
       <form onsubmit="loginAs('crew'); return false;">
       <input type="text" autocomplete="username" value="crew" style="position:absolute;left:-9999px" aria-hidden="true" tabindex="-1">
@@ -5411,6 +5413,15 @@ function renderSettings(el) {
         </div>
       </div>
       <div class="divider"></div>
+      ${currentUser?.role !== 'ADMIN' ? `
+      <div class="form-group mb-24">
+        <label style="font-weight: 600; display: block; margin-bottom: 8px;">Need Help?</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <a href="mailto:enterpriseskb01@gmail.com?subject=KB%20Enterprises%20Inquiry" class="btn btn-primary btn-sm">Email Us</a>
+          <a href="tel:+919600334884" class="btn btn-outline btn-sm">Call — +91 96003 34884</a>
+        </div>
+      </div>
+      <div class="divider"></div>` : ''}
       <button class="btn btn-outline btn-full" onclick="logout()" style="border-color: var(--red); color: var(--red); font-weight: 600; margin-top: 16px;">
         Sign Out
       </button>
