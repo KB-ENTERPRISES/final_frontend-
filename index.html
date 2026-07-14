@@ -2057,6 +2057,7 @@ input:focus, select:focus, textarea:focus {
         <button type="submit" class="btn btn-primary btn-full">Sign In</button>
         </form>
         <p class="auth-help">Don't have an account? <a href="#" onclick="setAuthMode('signup');return false;" style="color:var(--text);text-decoration:underline;">Sign up</a></p>
+        <p class="auth-help">Need help? <a href="tel:+919600334884" style="color:var(--accent);font-weight:600;text-decoration:none;">Call +91 96003 34884</a></p>
       </div>
       <div id="pane-signup" class="auth-form-pane">
         <form onsubmit="signupAs(); return false;">
@@ -2090,6 +2091,7 @@ input:focus, select:focus, textarea:focus {
       <div class="card-header">
         <div class="card-title">Crew Sign In</div>
         <div class="card-subtitle">Select your profile and enter your PIN</div>
+        <div class="card-subtitle" style="margin-top:4px;">Trouble signing in? <a href="tel:+919600334884" style="color:var(--accent);font-weight:600;text-decoration:none;">Call +91 96003 34884</a></div>
       </div>
       <form onsubmit="loginAs('crew'); return false;">
       <input type="text" autocomplete="username" value="crew" style="position:absolute;left:-9999px" aria-hidden="true" tabindex="-1">
@@ -3621,6 +3623,15 @@ function renderHome(el) {
       <p class="muted" style="margin-bottom: 16px;">Reach out directly and our team will get back to you.</p>
       <div style="display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;">
   <a href="mailto:enterpriseskb01@gmail.com?subject=KB%20Enterprises%20Inquiry" class="btn btn-primary btn-sm">Email Us — enterpriseskb01@gmail.com</a>
+  <img id="home-qr-thumb" src="assets/qr-code.png" onclick="openQrModal()" title="Tap to view, download or share our QR code"
+       style="cursor:pointer; width:60px; height:60px; border-radius:10px; border:1px solid var(--border); padding:4px; background:#fff; object-fit:contain;">
+</div>
+    </div><div class="card tc" style="padding: 32px 24px; margin-top: 8px;">
+      <div class="card-title" style="font-size:18px;margin-bottom:8px;">Need help or have a question?</div>
+      <p class="muted" style="margin-bottom: 16px;">Reach out directly and our team will get back to you.</p>
+      <div style="display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;">
+  <a href="mailto:enterpriseskb01@gmail.com?subject=KB%20Enterprises%20Inquiry" class="btn btn-primary btn-sm">Email Us — enterpriseskb01@gmail.com</a>
+  <a href="tel:+919600334884" class="btn btn-outline btn-sm">Call — +91 96003 34884</a>
   <img id="home-qr-thumb" src="assets/qr-code.png" onclick="openQrModal()" title="Tap to view, download or share our QR code"
        style="cursor:pointer; width:60px; height:60px; border-radius:10px; border:1px solid var(--border); padding:4px; background:#fff; object-fit:contain;">
 </div>
